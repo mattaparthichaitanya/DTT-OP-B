@@ -3,15 +3,15 @@ import credentials
 import datetime
 import DateTimeNow
 api = ShoonyaApiPy()
-# ret = api.login(userid=credentials.user, password=credentials.u_pwd, twoFA=credentials.factor2, vendor_code=credentials.vc, api_secret=credentials.app_key, imei=credentials.imei)
-# ret = ret['susertoken']
-# f = open('TOKEN','w+')
-# f.write(ret)
-# f.close()
+ret = api.login(userid=credentials.user, password=credentials.u_pwd, twoFA=credentials.factor2, vendor_code=credentials.vc, api_secret=credentials.app_key, imei=credentials.imei)
+ret = ret['susertoken']
+f = open('TOKEN','w+')
+f.write(ret)
+f.close()
 #######################################
-k = open("TOKEN",'r')
-l = (k.read())
-ok = api.set_session(userid=credentials.user, password=credentials.u_pwd, usertoken=l)
+# k = open("TOKEN",'r')
+# l = (k.read())
+# ok = api.set_session(userid=credentials.user, password=credentials.u_pwd, usertoken=l)
 token = api.get_quotes('NSE', 'Nifty Bank')['token']
 lastBusDay = datetime.datetime.today()
 lastBusDay = lastBusDay.replace(hour=DateTimeNow.hour, minute=DateTimeNow.minutes, second=0, microsecond=0)
