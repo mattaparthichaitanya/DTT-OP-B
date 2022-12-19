@@ -1,22 +1,13 @@
 from datetime import datetime
 import time
-###########################
-shour = 14
-smin = 7
-###########################
-
-##########################
-hour = abs(shour-5)
-if smin < 30:
-    minutes = smin+30
-    hour = abs(shour-6)
+optionsquareoffH = 15
+optionsquareoffM = 31
+hour = abs(optionsquareoffH-5)
+if optionsquareoffM < 30:
+    minutes = optionsquareoffM+30
+    hour = abs(optionsquareoffH-6)
 else:
-    minutes = abs(smin - 30)
-############################
-
-############################
-squareoffhour = 15
-squareoffmin = 15
+    minutes = abs(optionsquareoffM - 30)
 now = datetime.now()
 print(minutes)
 print(hour)
@@ -34,5 +25,4 @@ else:
     # print (waittime)
     time.sleep(waittime+2)
     now = datetime.now()
-    # print (now.time())
-# import main
+    print("TIME AYIPOYINDI MOWAAAAAAAAAAAAAAAAAAAAAA.............")

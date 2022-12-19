@@ -11,7 +11,7 @@ f.close()
 #######################################
 # k = open("TOKEN",'r')
 # l = (k.read())
-# ok = api.set_session(userid=credentials.user, password=credentials.u_pwd, usertoken=l)
+# ret = api.set_session(userid=credentials.user, password=credentials.u_pwd, usertoken=l)
 token = api.get_quotes('NSE', 'Nifty Bank')['token']
 lastBusDay = datetime.datetime.today()
 lastBusDay = lastBusDay.replace(hour=DateTimeNow.hour, minute=DateTimeNow.minutes, second=0, microsecond=0)

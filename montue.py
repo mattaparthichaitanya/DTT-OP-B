@@ -2,16 +2,19 @@ from api_helper import ShoonyaApiPy
 import credentials
 import datetime
 import DateTimeNow
+import TOKEN
+import time
 api = ShoonyaApiPy()
-# ret = api.login(userid=credentials.user, password=credentials.u_pwd, twoFA=credentials.factor2, vendor_code=credentials.vc, api_secret=credentials.app_key, imei=credentials.imei)
-# ret = ret['susertoken']
-# f = open('TOKEN','w+')
-# f.write(ret)
-# f.close()
+#ret = api.login(userid=credentials.user, password=credentials.u_pwd, twoFA=credentials.factor2, vendor_code=credentials.vc, api_secret=credentials.app_key, imei=credentials.imei)
+#ret = ret['susertoken']
+#f = open('TOKEN','w+')
+#f.write(ret)
+#f.close() 
 #######################################
-k = open("TOKEN",'r')
-l = (k.read())
-ok = api.set_session(userid=credentials.user, password=credentials.u_pwd, usertoken=l)
+#k = open('/home/ubuntu/DTT-OP-B/TOKEN','r')
+l = TOKEN.TOKEN
+#print(l)
+ret = api.set_session(userid=credentials.user, password=credentials.u_pwd, usertoken=l)
 token = api.get_quotes('NSE', 'Nifty Bank')['token']
 lastBusDay = datetime.datetime.today()
 lastBusDay = lastBusDay.replace(hour=DateTimeNow.hour, minute=DateTimeNow.minutes, second=0, microsecond=0)
@@ -21,8 +24,8 @@ twoopen = ret[0]['into']
 # exit()
 option_ki_dari_edi = round((int(float(twoopen))), -2)
 print("BANKNIFTY is at : ",option_ki_dari_edi)
-selection = f'{"Nifty Bank"} {"PE"} {option_ki_dari_edi+200}'
-selectionC = f'{"Nifty Bank"} {"CE"} {option_ki_dari_edi-200}'
+selection = f'{"Nifty Bank"} {"PE"} {option_ki_dari_edi}'
+selectionC = f'{"Nifty Bank"} {"CE"} {option_ki_dari_edi}'
 print(selectionC)
 print(selection)
 # optionToken = api.get_quotes('NFO', 'BANKNIFTY24NOV22C42400')['token']
@@ -30,7 +33,6 @@ optionToken = api.searchscrip(exchange='NFO',searchtext=selection)['values'][0][
 optionTokenC = api.searchscrip(exchange='NFO',searchtext=selectionC)['values'][0]['tsym']
 tokenC = api.get_quotes('NFO', optionTokenC)['token']
 token = api.get_quotes('NFO', optionToken)['token']
-# print(token)
 optoken = api.get_quotes('NFO', token)['token']
 optokenC = api.get_quotes('NFO', tokenC)['token']
 lastBusDay1 = lastBusDay
@@ -67,13 +69,39 @@ print("*******")
 print("MON CE SL : ",mondaystoplossC)
 print("*******")
 print("#######################################")
-optionsquareoffH = 15
-optionsquareoffM = 20
+
 # opltp = api.get_quotes(exchange='NFO', token=optoken)['lp']
 # print(float(opltp))
+feed_opened = False
+feedJson = {}
+socket_opened = False
+orderJson = {}
+def evert_handler_feed_update(message):
+    # print(message)
+    if (('lp' in message) & ('tk' in message)):
+        feedJson[message['tk']] = {'ltp': float(message['lp'])}
+def event_handler_order_update(inmessage):
+    # print(inmessage)
+    if (('norenordno' in inmessage) & ('status' in inmessage)):
+        orderJson[inmessage['norenordno']] = {'status': inmessage['status']}
+def open_callback():
+    global feed_opened
+    feed_opened = True
+def setupWebSocket():
+    global feed_opened
+    api.start_websocket(order_update_callback=event_handler_order_update,
+                        subscribe_callback=evert_handler_feed_update, socket_open_callback=open_callback)
+    time.sleep(1)
+    while (feed_opened == False):
+        print("WAITING FOR WEBSOCKET TO OPEN MOWAA")
+        pass
+    return True
+setupWebSocket()
+api.subscribe([f'NFO|{optoken}',f'NFO|{optokenC}'])
+time.sleep(1)
 while True:
-    opltp =float(api.get_quotes(exchange='NFO',token=optoken)['lp'])
-    opltpC =float(api.get_quotes(exchange='NFO',token=optokenC)['lp'])
+    opltp =float(feedJson[optoken]['ltp'])
+    opltpC =float(feedJson[optokenC]['ltp'])
     # print("CE : ",opltpC,"PE : ",opltp)
     if opltpC >= mondayentryC or opltp >= mondayentry :
         if opltp >= mondayentry:
@@ -85,7 +113,8 @@ while True:
             while True:
                 opltp = float(api.get_quotes(exchange='NFO', token=optoken)['lp'])
                 # print("PE LTP :   ",opltp)
-                if ((datetime.datetime.now()).time()).hour == optionsquareoffH and ((datetime.datetime.now()).time()).minute >= optionsquareoffM:
+                
+                if ((datetime.datetime.now()).time()).hour == 9 and ((datetime.datetime.now()).time()).minute >= 45:
                     api.place_order(buy_or_sell='S', product_type='M',
                                     exchange='NFO', tradingsymbol=optionToken,
                                     quantity=25, discloseqty=0, price_type='MKT',
@@ -115,7 +144,7 @@ while True:
             while True:
                 opltpC = float(api.get_quotes(exchange='NFO', token=optokenC)['lp'])
                 # print("CE LTP :   ",opltpC)
-                if ((datetime.datetime.now()).time()).hour == optionsquareoffH and ((datetime.datetime.now()).time()).minute >= optionsquareoffM:
+                if ((datetime.datetime.now()).time()).hour == 9 and ((datetime.datetime.now()).time()).minute >= 45:
                     api.place_order(buy_or_sell='S', product_type='M',
                                     exchange='NFO', tradingsymbol=optionTokenC,
                                     quantity=25, discloseqty=0, price_type='MKT',
@@ -136,6 +165,7 @@ while True:
                                     retention='DAY', remarks='SL ORDER')
                     print("CE STOPLOSS HIT")
                     exit()
-    if ((datetime.datetime.now()).time()).hour == optionsquareoffH and ((datetime.datetime.now()).time()).minute >= optionsquareoffM:
+    
+    if ((datetime.datetime.now()).time()).hour == 9 and ((datetime.datetime.now()).time()).minute >= 45:
         print('Market Closed Mowaa')
         exit()

@@ -5,3 +5,5 @@ factor2     = TOTP.pin
 vc          = 'FA33870_U'
 app_key     = 'b33f428b56ecbc1ee7eaa00409beeff5'
 imei        = 'abc1234'
+import datetime
+print(datetime.datetime.now())
