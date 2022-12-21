@@ -101,8 +101,10 @@ api.subscribe([f'NFO|{optoken}',f'NFO|{optokenC}'])
 time.sleep(1)
 while True:
     opltp =float(feedJson[optoken]['ltp'])
+    time.sleep(1)
     opltpC =float(feedJson[optokenC]['ltp'])
-    # print("CE : ",opltpC,"PE : ",opltp)
+    time.sleep(1)
+    print("CE :",opltpC,"  ", "PE :",opltp)
     if opltpC >= mondayentryC or opltp >= mondayentry :
         if opltp >= mondayentry:
             api.place_order(buy_or_sell='B', product_type='M',
